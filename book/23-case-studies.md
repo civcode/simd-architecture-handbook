@@ -321,7 +321,7 @@ groups = STABLE_GROUP_BY_TARGET(edges)
 FOR group IN groups
     target = TARGET(group)
     acc = LOAD_INITIAL_OUTPUT(output,target)
-    FOR edge IN group IN ORIGINAL_TARGET_ORDER
+    FOR edge IN ORIGINAL_ORDER_WITHIN(group)
         acc = COMBINE(acc,VALUE(edge))
     STORE_FINAL_OUTPUT(output,target,acc)
 ~~~
