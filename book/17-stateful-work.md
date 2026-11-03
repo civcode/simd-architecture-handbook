@@ -25,8 +25,9 @@ FOR task_group IN TILES(TASKS, V)
     state = VECTOR_INITIAL_STATE(task_group)
     step  = ZERO_VECTOR
     # Some tasks may already be terminal at their initial state.
-    active = VALID_LANES(task_group)
-             AND NOT VECTOR_TERMINAL(state, task_group, step)
+    valid = VALID_LANES(task_group)
+    active = valid AND NOT MASKED_VECTOR_TERMINAL(
+        state, task_group, step, valid)
 
     WHILE ANY(active)
         next_input = SAFE_LOAD_NEXT_INPUT(task_group, step, active)
