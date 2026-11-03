@@ -44,7 +44,7 @@ grouped = STABLE_GROUP_BY_TARGET(RELATIONSHIPS)
 
 FOR target IN DESTINATIONS
     partial = IDENTITY
-    FOR edge IN grouped[target] IN ORIGINAL_ORDER
+    FOR edge IN ORIGINAL_ORDER_WITHIN(grouped[target])
         partial = COMBINE(partial, EVALUATE(edge))
     result[target] = FINALIZE(partial)
 ~~~
