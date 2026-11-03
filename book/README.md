@@ -2,6 +2,8 @@
 
 An abstract, practical guide to inventing efficient vector execution architectures.
 
+**Prefer one file?** Read the [complete, self-contained handbook](../HANDBOOK.md), containing all 24 chapters and the glossary.
+
 **Read in order** if SIMD architecture is new to you; jump to Parts III–V if you already understand dependency graphs, tiling, and lane mappings.
 
 ## Part I — Model and transform the computation
