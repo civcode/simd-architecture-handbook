@@ -76,11 +76,12 @@ prefix = values
 distance = 1
 WHILE distance < V
     shifted = SHIFT_RIGHT_WITH_IDENTITY(prefix, distance)
-    prefix = MASKED_COMBINE(prefix, shifted, lanes >= distance)
+    # Earlier elements must appear on the LEFT for an ordered prefix.
+    prefix = MASKED_COMBINE(shifted, prefix, lanes >= distance)
     distance = distance * 2
 ~~~
 
-This form is legal for associative COMBINE with a valid identity; it performs a logarithmic number of cross-lane stages. When COMBINE is not associative, the reference sequential order may be unavoidable.
+Here MASKED_COMBINE(left, right, active) computes COMBINE(left, right) for active lanes and preserves the old prefix for inactive lanes. The operand order matters: an associative operation need **not** be commutative. For a left-to-right prefix, the shifted *earlier* partial must be the left operand. This form is legal for associative COMBINE with a valid identity; it performs logarithmic cross-lane stages. When COMBINE is not associative, the reference sequential order may be unavoidable.
 
 ## 9.6 Transposition between lane maps
 
