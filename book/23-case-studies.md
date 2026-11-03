@@ -220,11 +220,13 @@ FOR task
 # Candidate: each lane owns a state
 FOR group IN TILES(tasks, V)
     states = VECTOR_INITIAL(group)
-    active = VALID_LANES(group) AND NOT VECTOR_TERMINAL(states, group, 0)
+    valid = VALID_LANES(group)
+    active = valid AND NOT MASKED_VECTOR_TERMINAL(states, group, 0, valid)
     FOR step IN COMMON_STEP_DOMAIN(group)
         step_active = active AND STEP_EXISTS(group,step)
         states = MASKED_VECTOR_TRANSITION(states, group, step, step_active)
-        active = step_active AND NOT VECTOR_TERMINAL(states, group, step+1)
+        active = step_active AND NOT MASKED_VECTOR_TERMINAL(
+            states, group, step+1, step_active)
     STORE_STATES(group,states)
 ~~~
 
@@ -317,13 +319,14 @@ FOR edge IN ORIGINAL_ORDER
 # Candidate: stable grouping by output destination
 groups = STABLE_GROUP_BY_TARGET(edges)
 FOR group IN groups
-    acc = IDENTITY
-    FOR edge IN group
+    target = TARGET(group)
+    acc = LOAD_INITIAL_OUTPUT(output,target)
+    FOR edge IN group IN ORIGINAL_TARGET_ORDER
         acc = COMBINE(acc,VALUE(edge))
-    APPLY_COMBINED_UPDATE(output,TARGET(group),acc)
+    STORE_FINAL_OUTPUT(output,target,acc)
 ~~~
 
-**Why it may win:** fewer random output writes and a regular reduction loop per destination. **Why it may lose:** grouping/sorting cost and uneven groups. **Legal if:** original cross-target order is unobservable and combining per-target contributions is equivalent; to preserve exact ordered semantics, retain original order within each group and ensure merge grouping itself is valid.
+**Why it may win:** fewer random output writes and a regular reduction loop per destination. **Why it may lose:** grouping/sorting cost and uneven groups. **Legal if:** cross-target order is unobservable, groups preserve per-target contribution order, and each group begins with that target's original initialized output. This retains the per-target sequence even for a nonassociative COMBINE; starting from IDENTITY and merging the group into a preexisting output once would instead require stronger algebraic assumptions.
 
 **Alternative:** vectorize value preparation but apply writes sequentially when updates are nonassociative.
 
