@@ -24,7 +24,9 @@ The step dependency is real: step k+1 consumes state from k. But different tasks
 FOR task_group IN TILES(TASKS, V)
     state = VECTOR_INITIAL_STATE(task_group)
     step  = ZERO_VECTOR
+    # Some tasks may already be terminal at their initial state.
     active = VALID_LANES(task_group)
+             AND NOT VECTOR_TERMINAL(state, task_group, step)
 
     WHILE ANY(active)
         next_input = SAFE_LOAD_NEXT_INPUT(task_group, step, active)
@@ -60,12 +62,25 @@ state = INITIALIZE_LANES(group)
 active = VALID_LANES(group)
 
 WHILE ANY(active) OR NOT EMPTY(queue)
-    STEP_ACTIVE_LANES(group, state, active)
+    # A newly initialized task may be terminal without taking a step.
     finished = active AND TERMINAL(state)
     WRITE_FINISHED_RESULTS(group, state, finished)
+    active = active AND NOT finished
 
-    REPLACE_FINISHED_LANES_FROM_QUEUE(
+    REPLACE_EMPTY_LANES_FROM_QUEUE(
         group, state, active, queue)
+
+    # Repeat initial-termination handling for any just-refilled lanes.
+    finished = active AND TERMINAL(state)
+    WRITE_FINISHED_RESULTS(group, state, finished)
+    active = active AND NOT finished
+
+    IF ANY(active)
+        STEP_ACTIVE_LANES(group, state, active)
+
+# A concrete implementation must repeatedly retire zero-step tasks until
+# a lane holds nonterminal work or the queue is empty, including before
+# any first transition. No terminal or inactive lane may advance.
 ~~~
 
 This resembles vectorized discrete-event or stream processing. The logical order of task completion changes, so preserve task IDs and commit to the original output positions. Do not use this when interactions among tasks require a global chronological order.
