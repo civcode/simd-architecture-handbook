@@ -8,6 +8,7 @@ This is a **function-agnostic, programming-language-independent, instruction-set
 
 ## Start here
 
+- **[Complete single-file handbook](HANDBOOK.md)** — all 24 chapters, 15 case studies, and glossary in one Markdown document.
 - [Read the handbook](book/README.md) — 24 linked chapters, from first principles to worked transformations.
 - [Start with the design procedure](book/21-architecture-search.md) — how to compare loop schedules and tiles.
 - [Browse abstract case studies](book/23-case-studies.md) — transformations across algorithm classes.
