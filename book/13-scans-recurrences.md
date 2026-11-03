@@ -75,9 +75,12 @@ If every step can be represented by a transformation **T_i**, and transformation
 s_k = (T_k \circ T_{k-1} \circ \dots \circ T_0)(s_{\text{initial}})
 \]
 
-This enables a scan of transformations—*not* necessarily a scan of scalar input values.
+This enables a scan of transformations—*not* necessarily a scan of scalar input values. **Composition order is essential:** define the scan's chronological operator by COMPOSE(earlier, later) = later ∘ earlier (apply earlier first, then later). Do not use the reverse ordering simply because composition is associative; composition is not generally commutative.
 
 ~~~text
+FUNCTION COMPOSE(earlier, later):
+    RETURN TRANSFORMATION_THAT_APPLIES(earlier, THEN= later)
+
 FOR step
     op[step] = ENCODE_TRANSFORMATION(input[step])
 
@@ -86,6 +89,8 @@ composed_prefix = ASSOCIATIVE_SCAN(op, COMPOSE)
 FOR step
     state[step] = APPLY(composed_prefix[step], initial_state)
 ~~~
+
+The identity for this scan is the identity transformation. Each prefix must represent the original left-to-right sequence of state updates.
 
 The transformed representation may be larger than the original state. The parallel scan helps only when transition composition and application are cheaper than the avoided sequential dependency.
 
