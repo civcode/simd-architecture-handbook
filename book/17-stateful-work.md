@@ -34,7 +34,8 @@ FOR task_group IN TILES(TASKS, V)
         proposed = VECTOR_TRANSITION(state, next_input, active)
         state = SELECT(active, proposed, state)
         step = MASKED_INCREMENT(step, active)
-        active = active AND NOT VECTOR_TERMINAL(state, task_group, step)
+        active = active AND NOT MASKED_VECTOR_TERMINAL(
+            state, task_group, step, active)
 
     STORE_FINALIZED_STATES(task_group, state)
 ~~~
@@ -64,7 +65,7 @@ active = VALID_LANES(group)
 
 WHILE ANY(active) OR NOT EMPTY(queue)
     # A newly initialized task may be terminal without taking a step.
-    finished = active AND TERMINAL(state)
+    finished = active AND MASKED_TERMINAL(state, active)
     WRITE_FINISHED_RESULTS(group, state, finished)
     active = active AND NOT finished
 
@@ -72,7 +73,7 @@ WHILE ANY(active) OR NOT EMPTY(queue)
         group, state, active, queue)
 
     # Repeat initial-termination handling for any just-refilled lanes.
-    finished = active AND TERMINAL(state)
+    finished = active AND MASKED_TERMINAL(state, active)
     WRITE_FINISHED_RESULTS(group, state, finished)
     active = active AND NOT finished
 
