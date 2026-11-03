@@ -67,7 +67,7 @@ WRITE_FINAL_VALUE_AT_SEGMENT_ENDS(partial_segment_sums)
 
 Segmented scans require carefully defined handling for segments crossing vector and block boundaries. They may incur many lane operations when segments are tiny.
 
-## 16.5 Four-way dispatch by work length
+## 16.5 Three-way dispatch by work length
 
 A useful high-level schedule:
 
