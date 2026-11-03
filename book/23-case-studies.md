@@ -220,9 +220,11 @@ FOR task
 # Candidate: each lane owns a state
 FOR group IN TILES(tasks, V)
     states = VECTOR_INITIAL(group)
+    active = VALID_LANES(group) AND NOT VECTOR_TERMINAL(states, group, 0)
     FOR step IN COMMON_STEP_DOMAIN(group)
-        active = STEP_EXISTS(group,step)
-        states = MASKED_VECTOR_TRANSITION(states, group, step, active)
+        step_active = active AND STEP_EXISTS(group,step)
+        states = MASKED_VECTOR_TRANSITION(states, group, step, step_active)
+        active = step_active AND NOT VECTOR_TERMINAL(states, group, step+1)
     STORE_STATES(group,states)
 ~~~
 
