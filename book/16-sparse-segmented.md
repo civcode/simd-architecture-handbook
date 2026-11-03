@@ -113,7 +113,7 @@ A single chain has a true dependency, so a vector spanning successive chain step
 
 ~~~text
 states = LOAD_STARTS(chain_group)
-active = INITIAL_ACTIVE(chain_group)
+active = VALID_LANES(chain_group) AND NOT DONE(states)
 
 WHILE ANY(active)
     next_states = SAFE_VECTOR_FOLLOW(states, active)
