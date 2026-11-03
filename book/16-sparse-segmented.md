@@ -42,11 +42,11 @@ A possible transformation groups edges by target:
 ~~~text
 grouped = STABLE_GROUP_BY_TARGET(RELATIONSHIPS)
 
-FOR target IN GROUPED_TARGETS
+FOR target IN DESTINATIONS
     partial = IDENTITY
-    FOR edge IN grouped[target]
+    FOR edge IN grouped[target] IN ORIGINAL_ORDER
         partial = COMBINE(partial, EVALUATE(edge))
-    COMMIT(target, partial)
+    result[target] = FINALIZE(partial)
 ~~~
 
 If COMBINE is nonassociative, preserve the contribution order within each target. Grouping has preprocessing and memory costs.
@@ -63,9 +63,13 @@ partial_segment_sums =
     SEGMENTED_SCAN(values, segment_start, COMBINE)
 
 WRITE_FINAL_VALUE_AT_SEGMENT_ENDS(partial_segment_sums)
+
+# Empty segments have no relationship and therefore no segment-end value.
+FOR destination IN EMPTY_SEGMENTS
+    result[destination] = FINALIZE(IDENTITY)
 ~~~
 
-Segmented scans require carefully defined handling for segments crossing vector and block boundaries. They may incur many lane operations when segments are tiny.
+Segmented scans require carefully defined handling for segments crossing vector and block boundaries. Empty segments must still receive their contractually required result. They may incur many lane operations when segments are tiny.
 
 ## 16.5 Three-way dispatch by work length
 
@@ -113,7 +117,8 @@ A single chain has a true dependency, so a vector spanning successive chain step
 
 ~~~text
 states = LOAD_STARTS(chain_group)
-active = VALID_LANES(chain_group) AND NOT DONE(states)
+valid = VALID_LANES(chain_group)
+active = valid AND NOT MASKED_DONE(states, valid)
 
 WHILE ANY(active)
     next_states = SAFE_VECTOR_FOLLOW(states, active)
