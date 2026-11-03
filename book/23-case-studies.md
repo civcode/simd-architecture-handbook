@@ -174,7 +174,7 @@ FOR patch IN OUTPUT_PATCHES(T)
         FOR offset IN NEIGHBORHOOD
             a = VECTOR_COMBINE(
                 a, VECTOR_EVALUATE(input_region, xtile, offset))
-        COMMIT(xtile,a)
+        COMMIT_FINALIZED(xtile,a)
 ~~~
 
 **Why it may win:** reuse of overlapping source values and regular output stores. **Why it may lose:** staging overhead, duplicated halo, or cross-lane shifts. **Legal if:** all reads observe an immutable input snapshot and boundaries are handled as specified.
